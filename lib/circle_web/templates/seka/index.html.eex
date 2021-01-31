@@ -1,0 +1,5 @@
+<ul style="list-style-type:none;">
+  <li>
+    <%= link "New game", to: Routes.seka_path(@conn, :new) %>
+  </li>
+</ul>

@@ -1,0 +1,6 @@
+<%= render_layout CircleWeb.LayoutView, "app.html", assigns do %>
+    <section class="phx-hero">
+        <h1>Seka</h1>
+        <%= @inner_content %>
+    </section>
+<% end %>

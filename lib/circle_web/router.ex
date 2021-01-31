@@ -17,6 +17,12 @@ defmodule CircleWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    get "/seka", SekaController, :index
+    get "/seka/new", SekaController, :new
+    post "/seka/new", SekaController, :create
+    get "/seka/:id", SekaController, :show
+    post "/seka/:id", SekaController, :join
+    post "/seka/:id/start", SekaController, :start
   end
 
   # Other scopes may use custom stacks.

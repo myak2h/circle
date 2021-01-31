@@ -1,0 +1,5 @@
+<%= form_for :seka, Routes.seka_path(@conn, :new), fn f -> %>
+  <h2>Create new game<h2>
+  <%= text_input f, :name, placeholder: " Enter your nick name..."%>
+  <%= submit "Submit" %>
+<% end %>

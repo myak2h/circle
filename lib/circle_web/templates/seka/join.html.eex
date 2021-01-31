@@ -1,0 +1,6 @@
+<p>Game: <%= @game.id %></p>
+<%= form_for :seka, Routes.seka_path(@conn, :join, @game.id), fn f -> %>
+  <h2>Join this game<h2>
+  <%= text_input f, :name, placeholder: " Enter your nick name..."%>
+  <%= submit "Submit" %>
+<% end %>
