@@ -7,15 +7,27 @@ defmodule CircleWeb.SekaLive do
   def render(assigns) do
     ~L"""
     <p>Game: <%= @game.id %></p>
-    <p>Player: <%= @player_id %></p>
     <%= if @game.data.status == :new and @game.data.creator_id == @player_id do%>
     <button phx-click="start">Start game</button>
     <% end %>
-    <pre>
-      <code>
-          <%= inspect(@game, pretty: true) %>
-      </code>
-    </pre>
+    <div class="row">
+      <div class="column">
+        <%= for {_id, player} <- Enum.sort_by(@game.data.players, fn {k, _v} -> ((k == @player_id) && 0) || 1 end) do %>
+        <h3>👤 - <%= player.name %></h3>
+        <h1><%= player.hand[0] |> Enum.join(" ") |> String.pad_trailing(21, "_")  %><h1>
+        <h1><%= player.hand[1] |> Enum.join(" ") |> String.pad_trailing(21, "_") %></h1>
+        <h1><%= player.hand[2] |> Enum.join(" ") |> String.pad_trailing(21, "_") %></h1>
+        <h1><%= player.hand[3] |> Enum.join(" ") |> String.pad_trailing(21, "_") %><h1>
+        <% end %>
+      </div>
+      <div class="column">
+        <h3>Draw</h3>
+        <h1>🂠 <%= List.last(@game.data.closed_deck)%></h1>
+        <br><br><br><br>
+        <h3>Discard</h3>
+        <h1><%= @game.data.discard_pile != [] && hd(@game.data.discard_pile) || "__"%></h1>
+      </div>
+    </div>
     """
   end
 
@@ -58,7 +70,7 @@ defmodule CircleWeb.SekaLive do
         {other_player_id, other_player} ->
           hand =
             Enum.into(other_player.hand, %{}, fn {index, set} ->
-              {index, List.duplicate("▮", length(set))}
+              {index, List.duplicate("🂠", length(set))}
             end)
 
           {other_player_id, %{other_player | hand: hand}}
