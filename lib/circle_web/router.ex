@@ -4,7 +4,7 @@ defmodule CircleWeb.Router do
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
-    plug :fetch_flash
+    plug :fetch_live_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -21,6 +21,7 @@ defmodule CircleWeb.Router do
     get "/seka/new", SekaController, :new
     post "/seka/new", SekaController, :create
     get "/seka/:id", SekaController, :show
+    live "/seka/:id/live", SekaLive, :show
     post "/seka/:id", SekaController, :join
     post "/seka/:id/start", SekaController, :start
   end

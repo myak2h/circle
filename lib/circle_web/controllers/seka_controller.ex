@@ -25,8 +25,16 @@ defmodule CircleWeb.SekaController do
     game = Game.get(id)
 
     case get_session(conn, "#{id}_player_id") do
-      nil -> render(conn, "join.html", game: game)
-      player_id -> render(conn, "show.html", game: game, player_id: player_id)
+      nil ->
+        render(conn, "join.html", game: game)
+
+      player_id ->
+        live_render(conn, CircleWeb.SekaLive,
+          session: %{
+            "game" => game,
+            "player_id" => player_id
+          }
+        )
     end
   end
 
@@ -43,7 +51,7 @@ defmodule CircleWeb.SekaController do
 
   def start(conn, %{"id" => id}) do
     game = Game.get(id)
-    game_data = game.data |> Seka.parse() |> IO.inspect() |> Seka.start()
+    game_data = game.data |> Seka.parse() |> Seka.start()
     game = Game.update(game, game_data)
 
     redirect(conn, to: Routes.seka_path(conn, :show, game.id))

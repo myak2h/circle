@@ -2,6 +2,7 @@ defmodule Circle.Game do
   use Ecto.Schema
   import Ecto.Changeset
   alias Circle.Repo
+  @topic inspect(__MODULE__)
 
   schema "games" do
     field :data, :map
@@ -27,5 +28,20 @@ defmodule Circle.Game do
     game
     |> changeset(%{data: data})
     |> Repo.update!()
+    |> notify_subscribers(:updated)
+  end
+
+  # def subscribe do
+  #   Phoenix.PubSub.subscribe(Circle.PubSub, @topic)
+  # end
+
+  def subscribe(game_id) do
+    Phoenix.PubSub.subscribe(Circle.PubSub, @topic <> "#{game_id}")
+  end
+
+  defp notify_subscribers(game, event) do
+    # Phoenix.PubSub.broadcast(Circle.PubSub, @topic, {__MODULE__, event, game})
+    Phoenix.PubSub.broadcast(Circle.PubSub, @topic <> "#{game.id}", {__MODULE__, event, game})
+    game
   end
 end
