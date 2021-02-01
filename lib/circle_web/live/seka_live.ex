@@ -3,15 +3,19 @@ defmodule CircleWeb.SekaLive do
   use Phoenix.HTML
   alias Circle.Game
   alias Circle.Games.Seka
+  alias CircleWeb.Router.Helpers, as: Routes
 
   def render(assigns) do
     ~L"""
-    <p>Game: <%= @game.id %></p>
     <%= if @game.data.status == :new do%>
     <%= if @game.data.creator_id == @player_id do %>
-    <button phx-click="start">Start game</button>
+    <span style="margin: 10px">Game: <%= @game.id %></span><span style="margin: 10px" >Link: </span> <input value="<%= Routes.seka_url(@socket, :show, @game.id) %>" size="40" readonly/> <button class="button-clear">Copy</button>
+    <br>
+    <button class="button-clear" phx-click="start">Start game</button>
+    <% else %>
+    <h3>Game: <%= @game.id %></h3>
     <% end %>
-    <h3>Players: </h3>
+    <h3>Players</h3>
     <div class="row">
       <%= for {_id, player} <- @game.data.players do %>
       <div class="column">
@@ -20,6 +24,7 @@ defmodule CircleWeb.SekaLive do
       <% end %>
     </div>
     <% else %>
+    <h3>Game: <%= @game.id %></h3>
     <div class="row">
       <div class="column">
         <div class="row">
@@ -41,18 +46,18 @@ defmodule CircleWeb.SekaLive do
         </div>
       </div>
       <div class="column column-offset-10" style="border-left-style: groove;">
-        <h3>Draw</h3>
+        <br>
+        <h3>Discard Pile</h3>
+        <h1><%= @game.data.discard_pile != [] && hd(@game.data.discard_pile) || "__"%></h1>
+        <h3>Closed Deck</h3>
         <div class="row">
-          <div class="column column-offset-10">
+          <div class="column">
             <h1 style="font-size: 48px;">🂠</h1>
           </div>
-          <div class="column">
-            <div draggable="true" ondragstart="drag(event)" style="background-color: white; padding: 3px; border-style: solid; border-width: thin; width: 32px; height: 38px; margin-top: 14px"><%= List.last(@game.data.closed_deck) %></div>
+          <div class="column-25">
+            <div draggable="true" ondragstart="drag(event)" style="background-color: white; padding: 3px; border-style: solid; border-width: thin; width: 34px;"><%= List.last(@game.data.closed_deck) %></div>
           </div>
         </div>
-        <br>
-        <h3>Discard</h3>
-          <h1><%= @game.data.discard_pile != [] && hd(@game.data.discard_pile) || "__"%></h1>
         </div>
       </div>
     <% end %>
