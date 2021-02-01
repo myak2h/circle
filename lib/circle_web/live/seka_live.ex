@@ -36,6 +36,8 @@ defmodule CircleWeb.SekaLive do
     {:noreply, assign(socket, game: show(game, player_id))}
   end
 
+  defp show(game = %{data: %{status: :new}}, _player_id), do: game
+
   defp show(
          game = %{data: %{closed_deck: closed_deck, discard_pile: discard_pile, players: players}},
          player_id
