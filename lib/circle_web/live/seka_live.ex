@@ -7,27 +7,56 @@ defmodule CircleWeb.SekaLive do
   def render(assigns) do
     ~L"""
     <p>Game: <%= @game.id %></p>
-    <%= if @game.data.status == :new and @game.data.creator_id == @player_id do%>
+    <%= if @game.data.status == :new do%>
+    <%= if @game.data.creator_id == @player_id do %>
     <button phx-click="start">Start game</button>
     <% end %>
+    <h3>Players: </h3>
+    <div class="row">
+      <%= for {_id, player} <- @game.data.players do %>
+      <div class="column">
+        <h3>👤 - <%= player.name %></h3>
+      </div>
+      <% end %>
+    </div>
+    <% else %>
     <div class="row">
       <div class="column">
-        <%= for {_id, player} <- Enum.sort_by(@game.data.players, fn {k, _v} -> ((k == @player_id) && 0) || 1 end) do %>
-        <h3>👤 - <%= player.name %></h3>
-        <h1><%= player.hand[0] |> Enum.join(" ") |> String.pad_trailing(21, "_")  %><h1>
-        <h1><%= player.hand[1] |> Enum.join(" ") |> String.pad_trailing(21, "_") %></h1>
-        <h1><%= player.hand[2] |> Enum.join(" ") |> String.pad_trailing(21, "_") %></h1>
-        <h1><%= player.hand[3] |> Enum.join(" ") |> String.pad_trailing(21, "_") %><h1>
+        <div class="row">
+        <%= for {id, player} <- @game.data.players, id != @player_id do %>
+          <div class="column">
+            <h3>👤 - <%= player.name %></h3>
+            <h1 style="font-size: 48px;">🂠</h1>
+          </div>
         <% end %>
+        </div>
+        <hr>
+        <h3>👤 - <%= @game.data.players[@player_id].name %></h3>
+        <div class="row">
+        <%= for card <- @game.data.players[@player_id].hand[0] do %>
+          <div class="column" style="padding: 5px;" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div draggable="true" ondragstart="drag(event)" style="background-color: white; padding: 3px; border-style: solid; border-width: thin;"><%= card %></div>
+          </div>
+        <% end %>
+        </div>
       </div>
-      <div class="column">
+      <div class="column column-offset-10" style="border-left-style: groove;">
         <h3>Draw</h3>
-        <h1>🂠 <%= List.last(@game.data.closed_deck)%></h1>
-        <br><br><br><br>
+        <div class="row">
+          <div class="column column-offset-10">
+            <h1 style="font-size: 48px;">🂠</h1>
+          </div>
+          <div class="column">
+            <div draggable="true" ondragstart="drag(event)" style="background-color: white; padding: 3px; border-style: solid; border-width: thin; width: 32px; height: 38px; margin-top: 14px"><%= List.last(@game.data.closed_deck) %></div>
+          </div>
+        </div>
+        <br>
         <h3>Discard</h3>
-        <h1><%= @game.data.discard_pile != [] && hd(@game.data.discard_pile) || "__"%></h1>
+          <h1><%= @game.data.discard_pile != [] && hd(@game.data.discard_pile) || "__"%></h1>
+        </div>
       </div>
-    </div>
+    <% end %>
+
     """
   end
 
