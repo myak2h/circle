@@ -1,5 +1,5 @@
 <section class="phx-hero">
-    <ul style="list-style-type:none;">
+    <ul>
       <li>
         <%= link "Seka", to: Routes.seka_path(@conn, :index) %>
       </li>

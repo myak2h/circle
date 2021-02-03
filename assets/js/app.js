@@ -16,8 +16,24 @@ import "phoenix_html"
 import { Socket } from "phoenix"
 import LiveSocket from "phoenix_live_view"
 
+let Hooks = {}
+Hooks.CopyToClipboard = {
+    mounted() {
+        this.el.addEventListener("click", e => {
+            var copyText = document.getElementById("game-link");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); 
+            try {
+                document.execCommand("copy");
+            } catch (err) {
+                alert('Copy to clipboard error. Please select the area to copy and use ctrl + c shortcut keys.')
+            }
+        })
+    }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken } })
+let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })
 
 // Connect if there are any LiveViews on the page
 liveSocket.connect()
@@ -30,19 +46,6 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 
-// function allowDrop(ev) {
-//     console.log(ev)
-//     ev.preventDefault();
-// }
 
-// function drag(ev) {
-//     console.log(ev)
-//     ev.dataTransfer.setData("text", ev.target.id);
-// }
 
-// function drop(ev) {
-//     console.log(ev)
-//     ev.preventDefault();
-//     var data = ev.dataTransfer.getData("text");
-//     ev.target.appendChild(document.getElementById(data));
-// }
+
