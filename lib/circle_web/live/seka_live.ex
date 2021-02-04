@@ -5,6 +5,7 @@ defmodule CircleWeb.SekaLive do
   alias Circle.Games.Seka
   alias CircleWeb.Router.Helpers, as: Routes
   alias CircleWeb.Live.Components.GameLink
+  alias CircleWeb.Live.Components.DropZone
 
   def render(assigns) do
     ~L"""
@@ -17,45 +18,62 @@ defmodule CircleWeb.SekaLive do
         <p>Waiting for creator to start the game...<p>
       <% end %>
       <h3>Players</h3>
-      <%= for {_id, player} <- @game.data.players do %>
-        <p>👤 - <%= player.name %></p>
+      <%= for {id, player} <- @game.data.players do %>
+        <p>
+          👤 -
+          <%= if id == @player_id do%>
+            You
+          <% else %>
+            <%= player.name %>
+          <% end %>
+        </p>
       <% end %>
     <% else %>
+      <%= if @game.data.status == :waiting_for_player do %>
+        <i>
+          Waiting for
+          <b>
+            <%= if @game.data.turn == @player_id do%>
+              you
+            <% else %>
+              <%= @game.data.players[@game.data.turn].name %>
+            <% end %>
+          </b>
+          to
+          <b><%= @game.data.next_action%></b>...</i>
+      <% end %>
       <div style="display: flex; flex-flow: row;">
         <div>
           <h3>Players</h3>
-          <p>👤 - <%= @game.data.players[@player_id].name %></p>
-          <div style="display: flex; flex-flow: row;">
-            <%= for card <- @game.data.players[@player_id].hand[0] do %>
-              <div style="border-width: thin; border-style: dotted; padding: 5px; margin: 3px; width: 30px; height: 30px;" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <div draggable="true" ondragstart="drag(event)" style="border-style: solid; border-width: thin; padding: 4px;"><%= card %></div>
-              </div>
-            <% end %>
-          </div>
+          <%= live_component @socket, DropZone,
+            cards: @game.data.players[@player_id].hand[0],
+            player_id: @player_id,
+            drop_zone_id: "drop_zone_#{@player_id}",
+            title: @game.data.players[@player_id].name,
+            color: "white" %>
+
           <%= for {id, player} <- @game.data.players, id != @player_id do %>
             <p>👤 - <%= player.name %></p>
-            <div style="border-width: thin; border-style: dotted; padding: 5px; margin: 3px; width: 30px; height: 30px;">
-              <div style="width: 30px; height: 30px; background-color: black;"></div>
-            </div>
           <% end %>
         </div>
         <div style="margin-left: 20px; padding-left: 20px;">
           <h3>Discard Pile</h3>
-          <p><%= @game.data.discard_pile != [] && hd(@game.data.discard_pile) || "__"%></p>
+          <%= if @game.data.discard_pile == [] do %>
+            <p>__</p>
+          <% else %>
+            <button
+              style="padding: 5px; margin: 5px; font-size: 20px"
+              phx-click="draw_discard_pile">
+              <%= @game.data.discard_pile |> hd() |> card() %>
+            </button>
+          <% end %>
           <h3>Closed Deck</h3>
           <div style="display: flex; flex-flow: row;">
-            <div style="border-width: thin; border-style: dotted; padding: 5px; margin: 3px; width: 30px; height: 30px;">
-              <div style="width: 30px; height: 30px; background-color: black;"></div>
-            </div>
-            <div style="border-width: thin; border-style: dotted; padding: 5px; margin: 3px; width: 30px; height: 30px;" ondrop="drop(event)" ondragover="allowDrop(event)">
-              <div draggable="true" ondragstart="drag(event)" style="border-style: solid; border-width: thin; padding: 4px;"><%= List.last(@game.data.closed_deck) %></div>
-            </div>
+            <button style="background-color: black; width: 40px; height: 40px; padding: 5px; margin: 5px" phx-click="draw_closed_deck"></button>
+            <button style="padding: 5px; margin: 5px; font-size: 20px"><%= @game.data.closed_deck |> List.last() |> card() %></button>
           </div>
         </div>
       </div>
-
-
-
     <% end %>
     """
   end
@@ -63,56 +81,52 @@ defmodule CircleWeb.SekaLive do
   def mount(_params, %{"game" => game, "player_id" => player_id}, socket) do
     game = %{game | data: Seka.parse(game.data)}
     if connected?(socket), do: Game.subscribe(game.id)
-    {:ok, assign(socket, game: show(game, player_id), player_id: player_id)}
+    {:ok, assign(socket, game: game, player_id: player_id)}
   end
 
-  def handle_event("start", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
+  def handle_event("start", _params, socket = %{assigns: %{game: game}}) do
     game = Game.get(game.id)
     game_data = game.data |> Seka.parse() |> Seka.start()
     game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: show(game, player_id))}
+    {:noreply, assign(socket, game: game)}
   end
 
-  def handle_info({Game, :updated, game}, socket = %{assigns: %{player_id: player_id}}) do
-    {:noreply, assign(socket, game: show(game, player_id))}
+  def handle_event("draw_closed_deck", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
+    game = Game.get(game.id)
+    game_data = game.data |> Seka.parse() |> Seka.draw(player_id)
+    game = Game.update(game, game_data)
+    {:noreply, assign(socket, game: game)}
   end
 
-  defp show(game = %{data: %{status: :new}}, _player_id), do: game
-
-  defp show(
-         game = %{data: %{closed_deck: closed_deck, discard_pile: discard_pile, players: players}},
-         player_id
-       ) do
-    closed_deck = List.duplicate("▮", length(closed_deck) - 1) ++ [List.last(closed_deck)]
-
-    discard_pile =
-      case discard_pile do
-        [] -> []
-        [shown_card | other_cards] -> [shown_card | List.duplicate("▮", length(other_cards))]
-      end
-
-    players =
-      Enum.into(players, %{}, fn
-        {^player_id, player} ->
-          {player_id, player}
-
-        {other_player_id, other_player} ->
-          hand =
-            Enum.into(other_player.hand, %{}, fn {index, set} ->
-              {index, List.duplicate("🂠", length(set))}
-            end)
-
-          {other_player_id, %{other_player | hand: hand}}
-      end)
-
-    %{
-      game
-      | data: %{
-          game.data
-          | closed_deck: closed_deck,
-            discard_pile: discard_pile,
-            players: players
-        }
-    }
+  def handle_event("draw_discard_pile", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
+    game = Game.get(game.id)
+    game_data = game.data |> Seka.parse() |> Seka.draw(player_id, :discard_pile)
+    game = Game.update(game, game_data)
+    {:noreply, assign(socket, game: game)}
   end
+
+  def handle_event("discard", %{"card" => card}, socket = %{assigns: %{game: game, player_id: player_id}}) do
+    game = Game.get(game.id)
+    game_data = game.data |> Seka.parse() |> Seka.discard(player_id, card)
+    game = Game.update(game, game_data)
+    {:noreply, assign(socket, game: game)}
+  end
+
+  def handle_info({Game, :updated, game}, socket) do
+    {:noreply, assign(socket, game: game)}
+  end
+
+  def card("JO"), do: "🃟"
+  def card(card) do
+    [value, sign] = String.split(card, "", trim: true)
+    value(value) <> sign(sign)
+  end
+
+  defp value("T"), do: "10"
+  defp value(value), do: value
+
+  defp sign("S"), do: "♠"
+  defp sign("H"), do: "♥"
+  defp sign("D"), do: "⬥"
+  defp sign("F"), do: "✿"
 end

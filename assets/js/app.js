@@ -15,8 +15,9 @@ import "../css/app.scss"
 import "phoenix_html"
 import { Socket } from "phoenix"
 import LiveSocket from "phoenix_live_view"
+import Drag from './dragHook';
 
-let Hooks = {}
+let Hooks = {Drag: Drag}
 Hooks.CopyToClipboard = {
     mounted() {
         this.el.addEventListener("click", e => {

@@ -9,13 +9,13 @@ defmodule Circle.Games.Seka do
   alias Circle.Games.Seka.Deck
   alias Circle.Games.Seka.Player
   @derive Jason.Encoder
-  defstruct players: %{},
+  defstruct players: nil,
             status: :new,
             closed_deck: [],
             discard_pile: [],
             turn: nil,
             creator_id: nil,
-            next_action: nil,
+            next_action: :discard,
             winner: nil
 
   def parse(game) do
@@ -31,7 +31,7 @@ defmodule Circle.Games.Seka do
       discard_pile: game["discard_pile"],
       turn: game["turn"],
       creator_id: game["creator_id"],
-      next_action: game["next_action"],
+      next_action: String.to_atom(game["next_action"]),
       winner: game["winner"]
     }
   end
@@ -78,5 +78,91 @@ defmodule Circle.Games.Seka do
         next_action: :discard,
         turn: starter_id
     }
+  end
+
+  def draw(_game, _player_id, from \\ :closed_deck)
+
+  def draw(
+        game = %{
+          players: players,
+          closed_deck: closed_deck,
+          discard_pile: discard_pile,
+          status: :waiting_for_player,
+          turn: player_id,
+          next_action: :draw
+        },
+        player_id,
+        from
+      ) do
+    {card, closed_deck, discard_pile} =
+      case from do
+        :closed_deck ->
+          [card | closed_deck] = closed_deck
+
+          {card, closed_deck, discard_pile}
+
+        :discard_pile ->
+          [card | discard_pile] = discard_pile
+
+          {card, closed_deck, discard_pile}
+      end
+
+    hand = Map.put(players[player_id].hand, 0, [card | players[player_id].hand[0]])
+    player = Map.put(players[player_id], :hand, hand)
+    players = Map.put(players, player_id, player)
+
+    %__MODULE__{
+      game
+      | players: players,
+        discard_pile: discard_pile,
+        closed_deck: closed_deck,
+        next_action: :discard
+    }
+  end
+
+  def draw(game, _player_id, _from), do: game
+
+  def discard(
+        game = %{
+          players: players,
+          discard_pile: discard_pile,
+          status: :waiting_for_player,
+          turn: player_id,
+          next_action: :discard
+        },
+        player_id,
+        card
+      ) do
+    hand = Map.put(players[player_id].hand, 0, players[player_id].hand[0] -- [card])
+    player = Map.put(players[player_id], :hand, hand)
+    players = Map.put(players, player_id, player)
+
+    %__MODULE__{
+      game
+      | players: players,
+        discard_pile: [card | discard_pile],
+        turn: next_player_id(game),
+        next_action: :draw
+    }
+  end
+
+  def discard(game, _player_id, _card), do: game
+
+  defp next_player_id(_game = %{players: players, turn: current_player_id}) do
+    player_count = players |> Map.keys() |> length()
+
+    next_player_index =
+      if players[current_player_id].index + 1 < player_count do
+        players[current_player_id].index + 1
+      else
+        0
+      end
+
+    {next_player_id, _next_player} =
+      Enum.find(players, fn {_player_id, player} ->
+        player.index == next_player_index
+      end)
+
+    next_player_id
   end
 end
