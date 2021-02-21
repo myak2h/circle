@@ -1,17 +1,19 @@
 import Sortable from 'sortablejs';
 export default {
     mounted() {
-        let dragged; // this will change so we use `let`
-        const hook = this;
         const selector = '#' + this.el.id;
-        console.log('The selector is:', selector);
+        let that = this
         new Sortable(this.el, {
             animation: 0,
             delay: 50,
             delayOnTouchOnly: true,
             group: 'shared',
             draggable: '.draggable',
-            ghostClass: 'sortable-ghost'
-          });
+            ghostClass: 'sortable-ghost',
+            onUpdate: function () {
+                const cards = Array.from(this.el.children).map(button => { return button.getAttribute("phx-value-card") });
+                that.pushEvent("arrange", cards)
+            }
+        });
     }
 };

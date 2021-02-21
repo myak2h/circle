@@ -26,49 +26,29 @@ defmodule Circle.Games.Seka.Deck do
     sign
   end
 
+  def rank("JO"), do: 13
+
   def rank(card) do
     [value, _sign] = String.split(card, "", trim: true)
     Enum.find_index(@values, &(&1 == value))
   end
 
-  def is_win({set1, set2, set3, set4}, draw_card) do
-    is_win({[draw_card | set1], set2, set3, set4}) ||
-      is_win({set1, [draw_card | set2], set3, set4}) ||
-      is_win({set1, set2, [draw_card | set3], set4}) ||
-      is_win({set1, set2, set3, [draw_card | set4]})
-  end
-
   def is_win(hand) do
-    hand
-    |> Tuple.to_list()
-    |> Enum.map(
-      &{
-        &1 |> is_discard() |> boolean_to_integer(),
-        &1 |> is_tris() |> boolean_to_integer(),
-        &1 |> is_quatris() |> boolean_to_integer()
-      }
-    )
-    |> Enum.reduce(fn {d, t, q}, {ad, at, aq} -> {d + ad, t + at, q + aq} end)
-    |> Kernel.==({1, 2, 1})
+    {tris1, other} = Enum.split(hand, 3)
+    {tris2, other} = Enum.split(other, 3)
+    {quatris, _discard} = Enum.split(other, 4)
+    is_tris(tris1) && is_tris(tris2) && is_quatris(quatris)
   end
 
-  def is_tris(set) do
+  defp is_tris(set) do
     length(set) == 3 && (same_rank?(set) || (same_sign?(set) && consecutive?(set)))
   end
 
-  def is_quatris(set) do
+  defp is_quatris(set) do
     length(set) == 4 && (same_rank?(set) || (same_sign?(set) && consecutive?(set)))
   end
 
-  def is_draw_tris(set, draw_card), do: is_tris([draw_card | set])
-
-  def is_draw_quatris(set, draw_card), do: is_quatris([draw_card | set])
-
-  def is_discard(set) do
-    length(set) == 1
-  end
-
-  def same_rank?(set) do
+  defp same_rank?(set) do
     set
     |> Enum.filter(&(&1 != "JO"))
     |> Enum.map(&value/1)
@@ -86,7 +66,7 @@ defmodule Circle.Games.Seka.Deck do
     |> Kernel.==(1)
   end
 
-  def consecutive?(set) do
+  defp consecutive?(set) do
     {jockers, non_jockers} = Enum.split_with(set, &(&1 == "JO"))
 
     non_jocker_ranks =
@@ -107,8 +87,8 @@ defmodule Circle.Games.Seka.Deck do
     end
   end
 
-  def boolean_to_integer(true), do: 1
-  def boolean_to_integer(false), do: 0
+  defp boolean_to_integer(true), do: 1
+  defp boolean_to_integer(false), do: 0
 
   defp dif(value1, value2), do: min(value2 - value1, 13 - value2 + value1)
 end

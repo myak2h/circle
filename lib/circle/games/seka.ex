@@ -31,7 +31,7 @@ defmodule Circle.Games.Seka do
       discard_pile: game["discard_pile"],
       turn: game["turn"],
       creator_id: game["creator_id"],
-      next_action: String.to_atom(game["next_action"]),
+      next_action: game["next_action"] && String.to_atom(game["next_action"]),
       winner: game["winner"]
     }
   end
@@ -107,7 +107,7 @@ defmodule Circle.Games.Seka do
           {card, closed_deck, discard_pile}
       end
 
-    hand = Map.put(players[player_id].hand, 0, [card | players[player_id].hand[0]])
+    hand = Map.put(players[player_id].hand, 0, players[player_id].hand[0] ++ [card])
     player = Map.put(players[player_id], :hand, hand)
     players = Map.put(players, player_id, player)
 
@@ -147,6 +147,36 @@ defmodule Circle.Games.Seka do
   end
 
   def discard(game, _player_id, _card), do: game
+
+  def sort(game = %{players: players}, player_id) do
+    hand =
+      Map.put(players[player_id].hand, 0, Enum.sort_by(players[player_id].hand[0], &Deck.rank/1))
+
+    player = Map.put(players[player_id], :hand, hand)
+    players = Map.put(players, player_id, player)
+    %__MODULE__{game | players: players}
+  end
+
+  def arrange(game = %{players: players}, player_id, cards) do
+    hand =
+      if Enum.sort(players[player_id].hand[0]) == Enum.sort(cards) do
+        Map.put(players[player_id].hand, 0, cards)
+      else
+        players[player_id].hand
+      end
+
+    player = Map.put(players[player_id], :hand, hand)
+    players = Map.put(players, player_id, player)
+    %__MODULE__{game | players: players}
+  end
+
+  def declare(game = %{players: players}, player_id) do
+    if Deck.is_win(players[player_id].hand[0]) do
+      %__MODULE__{game | status: :won, winner: player_id, next_action: nil}
+    else
+      game
+    end
+  end
 
   defp next_player_id(_game = %{players: players, turn: current_player_id}) do
     player_count = players |> Map.keys() |> length()

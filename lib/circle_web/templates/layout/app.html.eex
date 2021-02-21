@@ -13,10 +13,10 @@
   <body>
     <header>
       <section>
-        <a href="<%= Routes.page_path(@conn, :index) %>">
-          <img src="<%= Routes.static_path(@conn, "/images/circle.jpg") %>" alt="Circle Logo" width="100" height="100"/>
+        <a href="<%= Routes.page_path(@conn, :index) %>" style="display: flex; flex-flow: row; text-decoration: none">
+          <img src="<%= Routes.static_path(@conn, "/images/circle.jpg") %>" alt="Circle Logo" width="50" height="50"/>
+          <h1 style="margin-left: 20px">Circle Games</h1>
         </a>
-        <h1>Circle Games</h1>
       </section>
     </header>
     <main>

@@ -42,35 +42,60 @@ defmodule CircleWeb.SekaLive do
           to
           <b><%= @game.data.next_action%></b>...</i>
       <% end %>
+      <%= if @game.data.status == :won do %>
+        The game is over!
+      <% end %>
       <div style="display: flex; flex-flow: row;">
         <div>
           <h3>Players</h3>
+          <hr>
           <%= live_component @socket, DropZone,
             cards: @game.data.players[@player_id].hand[0],
             player_id: @player_id,
+            player_name: "You",
             drop_zone_id: "drop_zone_#{@player_id}",
             title: @game.data.players[@player_id].name,
-            color: "white" %>
-
-          <%= for {id, player} <- @game.data.players, id != @player_id do %>
-            <p>👤 - <%= player.name %></p>
+            color: "white",
+            game_status: @game.data.status,
+            winner: @game.data.winner %>
+          <hr>
+          <%= if @game.data.status == :won do %>
+            <%= for {id, player} <- @game.data.players, id != @player_id do %>
+              <%= live_component @socket, DropZone,
+                cards: @game.data.players[id].hand[0],
+                player_id: id,
+                player_name: player.name,
+                drop_zone_id: "drop_zone_#{id}",
+                title: @game.data.players[id].name,
+                game_status: :won,
+                winner: @game.data.winner,
+                color: "white" %>
+            <% end %>
+          <% else %>
+            <%= for {id, player} <- @game.data.players, id != @player_id do %>
+              <p>👤 - <%= player.name %></p>
+            <% end %>
           <% end %>
+          <hr>
         </div>
         <div style="margin-left: 20px; padding-left: 20px;">
           <h3>Discard Pile</h3>
+          <hr>
           <%= if @game.data.discard_pile == [] do %>
             <p>__</p>
           <% else %>
-            <button
-              style="padding: 5px; margin: 5px; font-size: 20px"
-              phx-click="draw_discard_pile">
-              <%= @game.data.discard_pile |> hd() |> card() %>
-            </button>
+            <%= content_tag :button,  @game.data.discard_pile |> hd() |> card(),
+                  style: "padding: 5px; margin: 5px; font-size: 20px",
+                  phx_click: "draw_discard_pile",
+                  disabled: @game.data.status == :won %>
           <% end %>
           <h3>Closed Deck</h3>
+          <hr>
           <div style="display: flex; flex-flow: row;">
-            <button style="background-color: black; width: 40px; height: 40px; padding: 5px; margin: 5px" phx-click="draw_closed_deck"></button>
-            <button style="padding: 5px; margin: 5px; font-size: 20px"><%= @game.data.closed_deck |> List.last() |> card() %></button>
+          <%= content_tag :button,  "",
+                style: "background-color: black; width: 50px; height: 50px; padding: 5px; margin: 5px",
+                phx_click: "draw_closed_deck",
+                disabled: @game.data.status == :won %>
           </div>
         </div>
       </div>
@@ -91,23 +116,56 @@ defmodule CircleWeb.SekaLive do
     {:noreply, assign(socket, game: game)}
   end
 
-  def handle_event("draw_closed_deck", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
+  def handle_event(
+        "draw_closed_deck",
+        _params,
+        socket = %{assigns: %{game: game, player_id: player_id}}
+      ) do
     game = Game.get(game.id)
     game_data = game.data |> Seka.parse() |> Seka.draw(player_id)
     game = Game.update(game, game_data)
     {:noreply, assign(socket, game: game)}
   end
 
-  def handle_event("draw_discard_pile", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
+  def handle_event(
+        "draw_discard_pile",
+        _params,
+        socket = %{assigns: %{game: game, player_id: player_id}}
+      ) do
     game = Game.get(game.id)
     game_data = game.data |> Seka.parse() |> Seka.draw(player_id, :discard_pile)
     game = Game.update(game, game_data)
     {:noreply, assign(socket, game: game)}
   end
 
-  def handle_event("discard", %{"card" => card}, socket = %{assigns: %{game: game, player_id: player_id}}) do
+  def handle_event(
+        "discard",
+        %{"card" => card},
+        socket = %{assigns: %{game: game, player_id: player_id}}
+      ) do
     game = Game.get(game.id)
     game_data = game.data |> Seka.parse() |> Seka.discard(player_id, card)
+    game = Game.update(game, game_data)
+    {:noreply, assign(socket, game: game)}
+  end
+
+  def handle_event("sort", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
+    game = Game.get(game.id)
+    game_data = game.data |> Seka.parse() |> Seka.sort(player_id)
+    game = Game.update(game, game_data)
+    {:noreply, assign(socket, game: game)}
+  end
+
+  def handle_event("arrange", cards, socket = %{assigns: %{game: game, player_id: player_id}}) do
+    game = Game.get(game.id)
+    game_data = game.data |> Seka.parse() |> Seka.arrange(player_id, cards)
+    game = Game.update(game, game_data)
+    {:noreply, assign(socket, game: game)}
+  end
+
+  def handle_event("declare", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
+    game = Game.get(game.id)
+    game_data = game.data |> Seka.parse() |> Seka.declare(player_id)
     game = Game.update(game, game_data)
     {:noreply, assign(socket, game: game)}
   end
@@ -116,7 +174,8 @@ defmodule CircleWeb.SekaLive do
     {:noreply, assign(socket, game: game)}
   end
 
-  def card("JO"), do: "🃟"
+  def card("JO"), do: "JO"
+
   def card(card) do
     [value, sign] = String.split(card, "", trim: true)
     value(value) <> sign(sign)
