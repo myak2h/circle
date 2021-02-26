@@ -84,18 +84,24 @@ defmodule CircleWeb.SekaLive do
           <%= if @game.data.discard_pile == [] do %>
             <p>__</p>
           <% else %>
-            <%= content_tag :button,  @game.data.discard_pile |> hd() |> card(),
-                  style: "padding: 5px; margin: 5px; font-size: 20px",
-                  phx_click: "draw_discard_pile",
-                  disabled: @game.data.status == :won %>
+            <%= tag :img,
+              src: "#{@game.data.discard_pile |> hd() |> card_image_path()}",
+              style: "margin: 5px; #{@game.data.status == :won && "pointer-events: none" || ""}",
+              phx_click: "draw_discard_pile",
+              alt: "closed deck",
+              width: 100,
+              height: 150 %>
           <% end %>
           <h3>Closed Deck</h3>
           <hr>
           <div style="display: flex; flex-flow: row;">
-          <%= content_tag :button,  "",
-                style: "background-color: black; width: 50px; height: 50px; padding: 5px; margin: 5px",
+            <%= tag :img,
+                src: "#{card_image_path("BB")}",
+                style: "margin: 5px; #{@game.data.status == :won && "pointer-events: none" || ""}",
                 phx_click: "draw_closed_deck",
-                disabled: @game.data.status == :won %>
+                alt: "closed deck",
+                width: 100,
+                height: 150%>
           </div>
         </div>
       </div>
@@ -172,6 +178,10 @@ defmodule CircleWeb.SekaLive do
 
   def handle_info({Game, :updated, game}, socket) do
     {:noreply, assign(socket, game: game)}
+  end
+
+  def card_image_path(card) do
+    Routes.static_path(CircleWeb.Endpoint, "/images/cards/") <> card <> ".svg"
   end
 
   def card("JO"), do: "JO"

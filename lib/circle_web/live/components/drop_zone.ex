@@ -1,7 +1,7 @@
 defmodule CircleWeb.Live.Components.DropZone do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Tag
-  alias CircleWeb.SekaLive
+  import CircleWeb.SekaLive, only: [card_image_path: 1]
 
   @impl true
   def mount(socket) do
@@ -25,20 +25,23 @@ defmodule CircleWeb.Live.Components.DropZone do
       </div>
       <hr>
       <div style="display: flex; flex-flow: row;">
-        <div style="width: 150px; height: 20px; border-right: solid; text-align: center">tris 1</div>
-        <div style="width: 160px; height: 20px; border-right: solid; text-align: center">tris 2</div>
-        <div style="width: 220px; height: 20px; border-right: solid; text-align: center">quatris</div>
+        <div style="width: 300px; height: 20px; border-right: solid; text-align: center">Tris</div>
+        <div style="width: 295px; height: 20px; border-right: solid; text-align: center">Tris</div>
+        <div style="width: 400px; height: 20px; border-right: solid; text-align: center">Quatris</div>
       </div>
       <div id="<%= @drop_zone_id %>" phx-hook="Drag" style="margin-top: 10px; display: flex; flex-flow: row;">
         <%= for {card, index} <- Enum.with_index(@cards) do %>
-          <%= content_tag :button, SekaLive.card(card),
+          <%= tag :img,
+                src: "#{card_image_path(card)}",
                 draggable: "true",
                 class: "draggable",
                 id: "#{@player_id}-card-#{index}",
-                style: "padding: 5px; margin: 5px; font-size: 20px",
+                style: "margin: 5px; #{@game_status == :won && "pointer-events: none" || ""}",
                 phx_click: "discard",
                 phx_value_card:  card,
-                disabled: @game_status == :won %>
+                alt: card,
+                width: 90,
+                height: 130%>
         <% end %>
       </div>
     """
