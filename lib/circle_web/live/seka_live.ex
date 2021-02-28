@@ -4,108 +4,26 @@ defmodule CircleWeb.SekaLive do
   alias Circle.Game
   alias Circle.Games.Seka
   alias CircleWeb.Router.Helpers, as: Routes
-  alias CircleWeb.Live.Components.GameLink
-  alias CircleWeb.Live.Components.DropZone
+  alias CircleWeb.Live.Components.Seka.GameRule
+  alias CircleWeb.Live.Components.Seka.GameHeader
+  alias CircleWeb.Live.Components.Seka.GameOn
 
   def render(assigns) do
     ~L"""
-    <p>Game: <%= @game.id %></p>
-    <%= if @game.data.status == :new do%>
-      <%= if @game.data.creator_id == @player_id do %>
-        <%= live_component @socket, GameLink, link: Routes.seka_url(@socket, :show, @game.id) %><br>
-        <button phx-click="start">Start Game</button>
-      <% else %>
-        <p>Waiting for creator to start the game...<p>
-      <% end %>
-      <h3>Players</h3>
-      <%= for {id, player} <- @game.data.players do %>
-        <p>
-          👤 -
-          <%= if id == @player_id do%>
-            You
-          <% else %>
-            <%= player.name %>
+    <div>
+      <%= live_component @socket, GameHeader, game: @game, player_id: @player_id %>
+      <br><br>
+      <div style="display: flex; flex-wrap: wrap">
+        <div style="width: 50%; min-width: 600px">
+          <%= if @game.data.status != :new do%>
+            <%= live_component @socket, GameOn, game: @game, player_id: @player_id %>
           <% end %>
-        </p>
-      <% end %>
-    <% else %>
-      <%= if @game.data.status == :waiting_for_player do %>
-        <i>
-          Waiting for
-          <b>
-            <%= if @game.data.turn == @player_id do%>
-              you
-            <% else %>
-              <%= @game.data.players[@game.data.turn].name %>
-            <% end %>
-          </b>
-          to
-          <b><%= @game.data.next_action%></b>...</i>
-      <% end %>
-      <%= if @game.data.status == :won do %>
-        The game is over!
-      <% end %>
-      <div style="display: flex; flex-flow: row;">
-        <div>
-          <h3>Players</h3>
-          <hr>
-          <%= live_component @socket, DropZone,
-            cards: @game.data.players[@player_id].hand[0],
-            player_id: @player_id,
-            player_name: "You",
-            drop_zone_id: "drop_zone_#{@player_id}",
-            title: @game.data.players[@player_id].name,
-            color: "white",
-            game_status: @game.data.status,
-            winner: @game.data.winner %>
-          <hr>
-          <%= if @game.data.status == :won do %>
-            <%= for {id, player} <- @game.data.players, id != @player_id do %>
-              <%= live_component @socket, DropZone,
-                cards: @game.data.players[id].hand[0],
-                player_id: id,
-                player_name: player.name,
-                drop_zone_id: "drop_zone_#{id}",
-                title: @game.data.players[id].name,
-                game_status: :won,
-                winner: @game.data.winner,
-                color: "white" %>
-            <% end %>
-          <% else %>
-            <%= for {id, player} <- @game.data.players, id != @player_id do %>
-              <p>👤 - <%= player.name %></p>
-            <% end %>
-          <% end %>
-          <hr>
         </div>
-        <div style="margin-left: 20px; padding-left: 20px;">
-          <h3>Discard Pile</h3>
-          <hr>
-          <%= if @game.data.discard_pile == [] do %>
-            <p>__</p>
-          <% else %>
-            <%= tag :img,
-              src: "#{@game.data.discard_pile |> hd() |> card_image_path()}",
-              style: "margin: 5px; #{@game.data.status == :won && "pointer-events: none" || ""}",
-              phx_click: "draw_discard_pile",
-              alt: "closed deck",
-              width: 100,
-              height: 150 %>
-          <% end %>
-          <h3>Closed Deck</h3>
-          <hr>
-          <div style="display: flex; flex-flow: row;">
-            <%= tag :img,
-                src: "#{card_image_path("BB")}",
-                style: "margin: 5px; #{@game.data.status == :won && "pointer-events: none" || ""}",
-                phx_click: "draw_closed_deck",
-                alt: "closed deck",
-                width: 100,
-                height: 150%>
-          </div>
+        <div style="width: 30%; min-width: 400px">
+          <%= live_component @socket, GameRule %>
         </div>
       </div>
-    <% end %>
+    <div>
     """
   end
 
@@ -179,6 +97,7 @@ defmodule CircleWeb.SekaLive do
   def handle_info({Game, :updated, game}, socket) do
     {:noreply, assign(socket, game: game)}
   end
+
 
   def card_image_path(card) do
     Routes.static_path(CircleWeb.Endpoint, "/images/cards/") <> card <> ".svg"
