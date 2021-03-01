@@ -15,7 +15,7 @@
       <section>
         <a href="<%= Routes.page_path(@conn, :index) %>" style="display: flex; flex-flow: row; text-decoration: none">
           <img src="<%= Routes.static_path(@conn, "/images/circle.jpg") %>" alt="Circle Logo" width="50" height="50"/>
-          <h1 style="margin-left: 20px">Circle Games</h1>
+          <h1 style="margin-left: 20px">Chewata</h1>
         </a>
       </section>
     </header>
