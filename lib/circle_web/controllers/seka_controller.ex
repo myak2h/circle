@@ -29,7 +29,7 @@ defmodule CircleWeb.SekaController do
         render(conn, "join.html", game: game)
 
       player_id ->
-        live_render(conn, CircleWeb.SekaLive,
+        live_render(conn, CircleWeb.Surface.Seka.Game,
           session: %{
             "game" => game,
             "player_id" => player_id

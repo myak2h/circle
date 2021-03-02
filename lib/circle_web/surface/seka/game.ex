@@ -1,29 +1,25 @@
-defmodule CircleWeb.SekaLive do
-  use Phoenix.LiveView
-  use Phoenix.HTML
+defmodule CircleWeb.Surface.Seka.Game do
+  use Surface.LiveView
   alias Circle.Game
   alias Circle.Games.Seka
+  alias CircleWeb.Surface.Seka.Components.Players
+  alias CircleWeb.Surface.Seka.Components.ShareStart
+  alias CircleWeb.Surface.Seka.Components.GameOn
+  alias CircleWeb.Surface.Seka.Components.GameOver
   alias CircleWeb.Router.Helpers, as: Routes
-  alias CircleWeb.Live.Components.Seka.GameRule
-  alias CircleWeb.Live.Components.Seka.GameHeader
-  alias CircleWeb.Live.Components.Seka.GameOn
+
+  def mount(socket) do
+    {:ok, socket}
+  end
 
   def render(assigns) do
-    ~L"""
-    <div>
-      <%= live_component @socket, GameHeader, game: @game, player_id: @player_id %>
-      <br><br>
-      <div style="display: flex; flex-wrap: wrap">
-        <div style="width: 50%; min-width: 600px">
-          <%= if @game.data.status != :new do%>
-            <%= live_component @socket, GameOn, game: @game, player_id: @player_id %>
-          <% end %>
-        </div>
-        <div style="width: 30%; min-width: 400px">
-          <%= live_component @socket, GameRule %>
-        </div>
-      </div>
-    <div>
+    ~H"""
+      <p class="w3-xlarge">Game: {{@game.id}}</p>
+      <Players game={{@game}} player_id = {{@player_id}}/>
+      <ShareStart game={{@game}} :if={{@game.data.status == :new && @game.data.creator_id == @player_id}} />
+      <p :if={{@game.data.status == :new && @game.data.creator_id != @player_id}} class="w3-panel w3-pale-yellow w3-border w3-padding">Waiting for the game creator to start the game</p>
+      <GameOn game={{@game}} player_id = {{@player_id}} :if={{@game.data.status == :waiting_for_player}} />
+      <GameOver game={{@game}} player_id = {{@player_id}} :if={{@game.data.status == :won}} />
     """
   end
 
@@ -31,6 +27,10 @@ defmodule CircleWeb.SekaLive do
     game = %{game | data: Seka.parse(game.data)}
     if connected?(socket), do: Game.subscribe(game.id)
     {:ok, assign(socket, game: game, player_id: player_id)}
+  end
+
+  def handle_info({Game, :updated, game}, socket) do
+    {:noreply, assign(socket, game: game)}
   end
 
   def handle_event("start", _params, socket = %{assigns: %{game: game}}) do
@@ -93,28 +93,4 @@ defmodule CircleWeb.SekaLive do
     game = Game.update(game, game_data)
     {:noreply, assign(socket, game: game)}
   end
-
-  def handle_info({Game, :updated, game}, socket) do
-    {:noreply, assign(socket, game: game)}
-  end
-
-
-  def card_image_path(card) do
-    Routes.static_path(CircleWeb.Endpoint, "/images/cards/") <> card <> ".svg"
-  end
-
-  def card("JO"), do: "JO"
-
-  def card(card) do
-    [value, sign] = String.split(card, "", trim: true)
-    value(value) <> sign(sign)
-  end
-
-  defp value("T"), do: "10"
-  defp value(value), do: value
-
-  defp sign("S"), do: "♠"
-  defp sign("H"), do: "♥"
-  defp sign("D"), do: "⬥"
-  defp sign("F"), do: "✿"
 end

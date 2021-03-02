@@ -4,8 +4,9 @@ export default {
         const selector = '#' + this.el.id;
         let that = this
         new Sortable(this.el, {
-            animation: 0,
+            animation: 150,
             delay: 50,
+            swapThreshold: 0.5,
             delayOnTouchOnly: true,
             group: 'shared',
             draggable: '.draggable',

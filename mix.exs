@@ -46,7 +46,8 @@ defmodule Circle.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:phoenix_live_view, "~> 0.15.4"},
-      {:floki, ">= 0.27.0", only: :test}
+      {:floki, ">= 0.27.0", only: :test},
+      {:surface, "~> 0.3.0"}
     ]
   end
 
