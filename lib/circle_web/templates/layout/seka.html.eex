@@ -1,6 +1,3 @@
 <%= render_layout CircleWeb.LayoutView, "app.html", assigns do %>
-    <section>
-        <h2>Seka</h2>
-        <%= @inner_content %>
-    </section>
+    <%= @inner_content %>
 <% end %>

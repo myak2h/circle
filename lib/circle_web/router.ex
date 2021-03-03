@@ -18,7 +18,6 @@ defmodule CircleWeb.Router do
 
     get "/", PageController, :index
     get "/seka", SekaController, :index
-    get "/seka/new", SekaController, :new
     post "/seka/new", SekaController, :create
     get "/seka/:id", SekaController, :show
     live "/seka/:id/live", SekaLive, :show

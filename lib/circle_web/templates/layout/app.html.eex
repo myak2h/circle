@@ -21,8 +21,15 @@
               <h1>Chewata</h1>
             </a>
           </section>
+          <div class=" w3-bar">
+            <%= if @conn.path_info != [] && hd(@conn.path_info) == "seka" do %>
+              <%= link "Seka", to: Routes.seka_path(@conn, :index), class: "w3-bar-item w3-button w3-bottombar w3-hover-none w3-hover-text-blue w3-border-blue w3-text-blue w3-xlarge" %>
+            <% else %>
+              <%= link "Seka", to: Routes.seka_path(@conn, :index), class: "w3-bar-item w3-button w3-hover-none w3-border-white w3-bottombar w3-hover-border-blue w3-hover-text-blue w3-xlarge" %>
+            <% end %>
+          </div>
         </header>
-        <main>
+        <main >
           <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
           <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
           <%= @inner_content %>

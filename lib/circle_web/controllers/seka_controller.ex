@@ -8,10 +8,6 @@ defmodule CircleWeb.SekaController do
     render(conn, "index.html")
   end
 
-  def new(conn, _params) do
-    render(conn, "new.html")
-  end
-
   def create(conn, %{"seka" => %{"name" => creator_name}}) do
     {creator_id, seka_game} = Seka.new(creator_name)
     game = Game.new(seka_game)

@@ -11,7 +11,7 @@ defmodule CircleWeb.Surface.Seka.Components.ShareStart do
         <input class="w3-input w3-col s8 m6" value="{{Routes.seka_url(@socket, :show, @game.id)}}" readonly id="game-link"/>
         <button phx-hook="CopyToClipboard" class="w3-button w3-border"><i class="fas fa-clipboard"></i></button>
       </div>
-      <button class="w3-button w3-margin-top w3-blue w3-round w3-large" :on-click="start">Start</button>
+      <button class="w3-button w3-margin-top w3-blue w3-round w3-large" :on-click="start" :attrs={{disabled: @game.data.players |> Map.keys() |> length() < 2}}>Start</button>
     """
   end
 end
