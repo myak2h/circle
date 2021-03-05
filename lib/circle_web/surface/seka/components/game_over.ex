@@ -14,14 +14,14 @@ defmodule CircleWeb.Surface.Seka.Components.GameOver do
       </div>
       <hr>
       <div class="flex-row">
-        {{ closed_deck(@game) }}
-        {{ @game.data.discard_pile != [] && discard_pile(@game) || nil }}
+        {{ closed_deck(@game, @player_id) }}
+        {{ @game.data.discard_pile != [] && discard_pile(@game, @player_id) || nil }}
       </div>
       <br/>
       <div :for={{{id, player} <- Enum.sort_by(@game.data.players, fn {id, _} -> id != @game.data.winner end)}}>
         <p class="w3-xlarge">{{player.name}} <b :if={{@game.data.winner == id}} class="w3-text-green"> - Winner!</b></p>
         <div class="flex-row">
-          {{hand(player.hand[0])}}
+          {{hand(player, @game.id)}}
         </div>
       </div>
       <br/>
@@ -30,33 +30,36 @@ defmodule CircleWeb.Surface.Seka.Components.GameOver do
     """
   end
 
-  defp hand(cards) do
-    for {card, index} <- Enum.with_index(cards) do
+  defp hand(player, game_id) do
+    for {card, index} <- Enum.with_index(player.hand[0]) do
       tag(:img,
         src: "#{card_image_path(card)}",
         style: "width: 100px; height: 140px; position: relative; left: #{-index * 40}px;",
         alt: card,
+        id: "#{game_id}-#{player.id}-#{card}-#{index}",
         phx_hook: "ImageContextMenu"
       )
     end
   end
 
-  defp discard_pile(game) do
+  defp discard_pile(game, player_id) do
     tag(:img,
       src: "#{game.data.discard_pile |> hd() |> card_image_path()}",
       alt: "discard pile",
       style: "width: 100px; height: 140px; position: relative; left: 20px",
       title: "Discard Pile",
+      id: "discard_pile_#{game.id}_#{player_id}",
       phx_hook: "ImageContextMenu"
     )
   end
 
-  defp closed_deck(game) do
+  defp closed_deck(game, player_id) do
     tag(:img,
       src: "#{card_image_path("BB")}",
       alt: "closed deck",
       style: "width: 100px; height: 140px;",
       title: "Closed Deck",
+      id: "closed_deck_#{game.id}_#{player_id}",
       phx_hook: "ImageContextMenu"
     )
   end

@@ -42,6 +42,17 @@ Hooks.ImageContextMenu = {
     }
 }
 
+Hooks.BeforeUnload = {
+    mounted() {
+        window.addEventListener("beforeunload", e => {
+            var confirmationMessage = 'Are you sure you want to leave the game?';
+            e.preventDefault();
+            (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+            return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+        });
+    }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })
 
@@ -55,7 +66,6 @@ liveSocket.connect()
 // Call disableLatencySim() to disable:
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
-
 
 
 

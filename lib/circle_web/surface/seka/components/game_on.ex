@@ -16,8 +16,8 @@ defmodule CircleWeb.Surface.Seka.Components.GameOn do
         </p>
         <hr>
         <div class="flex-row">
-          {{ closed_deck(@game) }}
-          {{ @game.data.discard_pile != [] && discard_pile(@game) || nil }}
+          {{ closed_deck(@game, @player_id) }}
+          {{ @game.data.discard_pile != [] && discard_pile(@game, @player_id) || nil }}
         </div>
         <br/><br/>
         <div id="<%= @drop_zone_id %>" phx-hook="Drag" class="flex-row">
@@ -49,7 +49,7 @@ defmodule CircleWeb.Surface.Seka.Components.GameOn do
         src: "#{card_image_path(card)}",
         draggable: "true",
         class: "draggable",
-        id: "#{player_id}-card-#{index}",
+        id: "#{game.id}-#{player_id}-#{card}-#{index}",
         style: "width: 100px; height: 140px; position: relative; left: #{-index * 50}px;",
         phx_click: "discard",
         phx_value_card: card,
@@ -59,24 +59,26 @@ defmodule CircleWeb.Surface.Seka.Components.GameOn do
     end
   end
 
-  defp discard_pile(game) do
+  defp discard_pile(game, player_id) do
     tag(:img,
       src: "#{game.data.discard_pile |> hd() |> card_image_path()}",
       phx_click: "draw_discard_pile",
       alt: "discard pile",
       style: "width: 100px; height: 140px; position: relative; left: 20px",
       title: "Discard Pile",
+      id: "discard_pile_#{game.id}_#{player_id}",
       phx_hook: "ImageContextMenu"
     )
   end
 
-  defp closed_deck(game) do
+  defp closed_deck(game, player_id) do
     tag(:img,
       src: "#{card_image_path("BB")}",
       phx_click: "draw_closed_deck",
       alt: "closed deck",
       style: "width: 100px; height: 140px;",
       title: "Closed Deck",
+      id: "closed_deck_#{game.id}_#{player_id}",
       phx_hook: "ImageContextMenu"
     )
   end

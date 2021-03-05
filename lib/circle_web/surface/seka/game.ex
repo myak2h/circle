@@ -14,12 +14,14 @@ defmodule CircleWeb.Surface.Seka.Game do
 
   def render(assigns) do
     ~H"""
-      <p class="w3-xlarge">Game: {{@game.id}}</p>
-      <Players game={{@game}} player_id = {{@player_id}}/>
-      <ShareStart game={{@game}} :if={{@game.data.status == :new && @game.data.creator_id == @player_id}} />
-      <p :if={{@game.data.status == :new && @game.data.creator_id != @player_id}} class="w3-panel w3-pale-yellow w3-border w3-padding">Waiting for the game creator to start the game</p>
-      <GameOn game={{@game}} player_id = {{@player_id}} :if={{@game.data.status == :waiting_for_player}} />
-      <GameOver game={{@game}} player_id = {{@player_id}} :if={{@game.data.status == :won}} />
+      <div phx-hook="BeforeUnload" id="{{@game.id}}-{{@player_id}}">
+        <p class="w3-xlarge">Game: {{@game.id}}</p>
+        <Players game={{@game}} player_id = {{@player_id}}/>
+        <ShareStart game={{@game}} :if={{@game.data.status == :new && @game.data.creator_id == @player_id}} />
+        <p :if={{@game.data.status == :new && @game.data.creator_id != @player_id}} class="w3-panel w3-pale-yellow w3-border w3-padding">Waiting for the game creator to start the game</p>
+        <GameOn game={{@game}} player_id = {{@player_id}} :if={{@game.data.status == :waiting_for_player}} />
+        <GameOver game={{@game}} player_id = {{@player_id}} :if={{@game.data.status == :won}} />
+      </div>
     """
   end
 
