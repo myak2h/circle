@@ -14,6 +14,9 @@ export default {
             onUpdate: function () {
                 const cards = Array.from(this.el.children).map(button => { return button.getAttribute("phx-value-card") });
                 that.pushEvent("arrange", cards)
+            },
+            onStart: function (evt) {
+                evt.item.style.visibility = "hidden"
             }
         });
     }

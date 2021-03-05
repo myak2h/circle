@@ -29,15 +29,26 @@ defmodule CircleWeb.Surface.Seka.Game do
     {:ok, assign(socket, game: game, player_id: player_id)}
   end
 
-  def handle_info({Game, :updated, game}, socket) do
+  def handle_info({Game, :updated, updated_game}, socket = %{assigns: %{game: game}}) do
+    game =
+      (NaiveDateTime.compare(updated_game.updated_at, game.updated_at) in [:eq, :gt] &&
+         updated_game) || game
+
     {:noreply, assign(socket, game: game)}
   end
 
   def handle_event("start", _params, socket = %{assigns: %{game: game}}) do
-    game = Game.get(game.id)
-    game_data = game.data |> Seka.parse() |> Seka.start()
-    game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: game)}
+    game_data = Seka.start(game.data)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
+  end
+
+  def handle_event("restart", _params, socket = %{assigns: %{game: game}}) do
+    game_data = Seka.restart(game.data)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
   end
 
   def handle_event(
@@ -45,10 +56,10 @@ defmodule CircleWeb.Surface.Seka.Game do
         _params,
         socket = %{assigns: %{game: game, player_id: player_id}}
       ) do
-    game = Game.get(game.id)
-    game_data = game.data |> Seka.parse() |> Seka.draw(player_id)
-    game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: game)}
+    game_data = Seka.draw(game.data, player_id)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
   end
 
   def handle_event(
@@ -56,10 +67,10 @@ defmodule CircleWeb.Surface.Seka.Game do
         _params,
         socket = %{assigns: %{game: game, player_id: player_id}}
       ) do
-    game = Game.get(game.id)
-    game_data = game.data |> Seka.parse() |> Seka.draw(player_id, :discard_pile)
-    game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: game)}
+    game_data = Seka.draw(game.data, player_id, :discard_pile)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
   end
 
   def handle_event(
@@ -67,30 +78,30 @@ defmodule CircleWeb.Surface.Seka.Game do
         %{"card" => card},
         socket = %{assigns: %{game: game, player_id: player_id}}
       ) do
-    game = Game.get(game.id)
-    game_data = game.data |> Seka.parse() |> Seka.discard(player_id, card)
-    game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: game)}
+    game_data = Seka.discard(game.data, player_id, card)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
   end
 
   def handle_event("sort", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
-    game = Game.get(game.id)
-    game_data = game.data |> Seka.parse() |> Seka.sort(player_id)
-    game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: game)}
+    game_data = Seka.sort(game.data, player_id)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
   end
 
   def handle_event("arrange", cards, socket = %{assigns: %{game: game, player_id: player_id}}) do
-    game = Game.get(game.id)
-    game_data = game.data |> Seka.parse() |> Seka.arrange(player_id, cards)
-    game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: game)}
+    game_data = Seka.arrange(game.data, player_id, cards)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
   end
 
   def handle_event("declare", _params, socket = %{assigns: %{game: game, player_id: player_id}}) do
-    game = Game.get(game.id)
-    game_data = game.data |> Seka.parse() |> Seka.declare(player_id)
-    game = Game.update(game, game_data)
-    {:noreply, assign(socket, game: game)}
+    game_data = Seka.declare(game.data, player_id)
+
+    {:noreply,
+     assign(socket, game: (game.data != game_data && Game.update(game, game_data)) || game)}
   end
 end

@@ -9,9 +9,9 @@ defmodule CircleWeb.Surface.Seka.Components.GameOver do
   def render(assigns) do
     ~H"""
     <div>
-      <p class="w3-panel w3-pale-green w3-border w3-padding">
-        Game Over!
-      </p>
+      <div class="w3-large w3-pale-green w3-border w3-display-container w3-center w3-padding-24 w3-large">
+        Game Over!  <button :if={{@player_id == @game.data.creator_id}} class="w3-button w3-round w3-blue w3-display-right w3-margin-right" phx-click="restart">Restart</button>
+      </div>
       <hr>
       <div class="flex-row">
         {{ closed_deck(@game) }}
@@ -35,7 +35,8 @@ defmodule CircleWeb.Surface.Seka.Components.GameOver do
       tag(:img,
         src: "#{card_image_path(card)}",
         style: "width: 100px; height: 140px; position: relative; left: #{-index * 40}px;",
-        alt: card
+        alt: card,
+        phx_hook: "ImageContextMenu"
       )
     end
   end
@@ -45,7 +46,8 @@ defmodule CircleWeb.Surface.Seka.Components.GameOver do
       src: "#{game.data.discard_pile |> hd() |> card_image_path()}",
       alt: "discard pile",
       style: "width: 100px; height: 140px; position: relative; left: 20px",
-      title: "Discard Pile"
+      title: "Discard Pile",
+      phx_hook: "ImageContextMenu"
     )
   end
 
@@ -54,7 +56,8 @@ defmodule CircleWeb.Surface.Seka.Components.GameOver do
       src: "#{card_image_path("BB")}",
       alt: "closed deck",
       style: "width: 100px; height: 140px;",
-      title: "Closed Deck"
+      title: "Closed Deck",
+      phx_hook: "ImageContextMenu"
     )
   end
 

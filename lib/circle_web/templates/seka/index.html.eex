@@ -1,5 +1,5 @@
 <%= form_for :seka, Routes.seka_path(@conn, :create), [class: "w3-row"], fn f -> %>
-  <p class="w3-large">Create a new game<p>
-  <%= text_input f, :name, placeholder: " Enter your nick name...", class: "w3-input w3-half w3-large", required: true%>
-  <%= submit "Create", class: "w3-button w3-blue w3-margin-left w3-large"%>
+  <p class="w3-large w3-col s12">Create a new game<p>
+  <%= text_input f, :name, placeholder: " Enter your nick name...", class: "w3-input w3-col s6 w3-large", required: true %>
+  <%= submit "Create", class: "w3-button w3-blue w3-margin-left w3-round w3-large w3-col s2"%>
 <% end %>

@@ -2,5 +2,5 @@
   <p class="w3-large">Game: <%= @game.id %></p>
   <p class="w3-large">Join this game<p>
   <%= text_input f, :name, placeholder: " Enter your nick name...", required: true, class: "w3-input w3-half w3-large" %>
-  <%= submit "Join", class: "w3-button w3-blue w3-margin-left w3-large"%>
+  <%= submit "Join", class: "w3-button w3-blue w3-margin-left w3-large w3-third"%>
 <% end %>

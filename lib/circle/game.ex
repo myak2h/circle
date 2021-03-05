@@ -6,6 +6,7 @@ defmodule Circle.Game do
 
   schema "games" do
     field :data, :map
+    timestamps()
   end
 
   def changeset(%__MODULE__{} = game, attrs) do

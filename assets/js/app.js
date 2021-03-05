@@ -17,18 +17,27 @@ import { Socket } from "phoenix"
 import LiveSocket from "phoenix_live_view"
 import Drag from './dragHook';
 
-let Hooks = {Drag: Drag}
+let Hooks = { Drag: Drag }
 Hooks.CopyToClipboard = {
     mounted() {
         this.el.addEventListener("click", e => {
             var copyText = document.getElementById("game-link");
             copyText.select();
-            copyText.setSelectionRange(0, 99999); 
+            copyText.setSelectionRange(0, 99999);
             try {
                 document.execCommand("copy");
             } catch (err) {
                 alert('Copy to clipboard error. Please select the area to copy and use ctrl + c shortcut keys.')
             }
+        })
+    }
+}
+
+Hooks.ImageContextMenu = {
+    mounted() {
+        this.el.addEventListener("contextmenu", e => {
+            e.preventDefault()
+            return false
         })
     }
 }
