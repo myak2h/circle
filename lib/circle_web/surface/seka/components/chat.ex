@@ -9,7 +9,7 @@ defmodule CircleWeb.Surface.Seka.Components.Chat do
 
   def render(assigns) do
     ~H"""
-    <button id="{{@game.id}}_{{@player_id}}_open_chat_button" phx-hook="OpenChatButton" class="open-button w3-button w3-teal w3-xlarge w3-round w3-bar">
+    <button id="{{@game.id}}_{{@player_id}}_open_chat_button" phx-hook="OpenChatButton" class="open-button w3-button w3-teal w3-xlarge w3-round">
       <span class="w3-margin">Chat</span>
       <i class="far fa-comment"></i>
     </button>
