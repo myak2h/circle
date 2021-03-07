@@ -87,8 +87,5 @@ defmodule Circle.Games.Seka.Deck do
     end
   end
 
-  defp boolean_to_integer(true), do: 1
-  defp boolean_to_integer(false), do: 0
-
   defp dif(value1, value2), do: min(value2 - value1, 13 - value2 + value1)
 end

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="height: 100%">
+<html lang="en">
   <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -10,7 +10,7 @@
     <%= csrf_meta_tag() %>
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
-  <body style="height: 100%;" class="w3-light-grey">
+  <body class="w3-light-grey">
       <div class="w3-white" style="width: 800px; margin-left: auto; margin-right: auto; margin-top: 20px; padding: 30px">
         <header>
           <section class="flex-row">

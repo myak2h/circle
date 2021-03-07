@@ -1,11 +1,14 @@
 defmodule Circle.Game do
-  use Ecto.Schema
+  use Circle.Schema
   import Ecto.Changeset
+  alias Circle.Chat
   alias Circle.Repo
+
   @topic inspect(__MODULE__)
 
   schema "games" do
-    field :data, :map
+    field(:data, :map)
+    has_many(:chats, Chat)
     timestamps()
   end
 
@@ -22,7 +25,9 @@ defmodule Circle.Game do
   end
 
   def get(id) do
-    Repo.get!(__MODULE__, id)
+    __MODULE__
+    |> Repo.get!(id)
+    |> Repo.preload(:chats)
   end
 
   def update(game, data) do
@@ -37,12 +42,11 @@ defmodule Circle.Game do
   # end
 
   def subscribe(game_id) do
-    Phoenix.PubSub.subscribe(Circle.PubSub, @topic <> "#{game_id}")
+    Phoenix.PubSub.subscribe(Circle.PubSub, "game:#{game_id}")
   end
 
   defp notify_subscribers(game, event) do
-    # Phoenix.PubSub.broadcast(Circle.PubSub, @topic, {__MODULE__, event, game})
-    Phoenix.PubSub.broadcast(Circle.PubSub, @topic <> "#{game.id}", {__MODULE__, event, game})
+    Phoenix.PubSub.broadcast(Circle.PubSub, "game:#{game.id}",  event)
     game
   end
 end

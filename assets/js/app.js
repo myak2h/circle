@@ -53,6 +53,33 @@ Hooks.BeforeUnload = {
     }
 }
 
+Hooks.OpenChatButton = {
+    mounted() {
+        this.el.addEventListener("click", e => {
+            document.getElementById("chatForm").style.display = "block";;
+        })
+    }
+}
+
+Hooks.CloseChatButton = {
+    mounted() {
+        this.el.addEventListener("click", e => {
+            document.getElementById("chatForm").style.display = "none";;
+        })
+    }
+}
+
+
+Hooks.ChatMessages = {
+    mounted() {
+        this.el.scrollTop = this.el.scrollHeight
+    },
+    updated() {
+        console.log("updated")
+        this.el.scrollTop = this.el.scrollHeight
+    }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks })
 
