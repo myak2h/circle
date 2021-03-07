@@ -17,6 +17,9 @@ export default {
             },
             onStart: function (evt) {
                 evt.item.style.visibility = "hidden"
+            },
+            onEnd: function (evt) {
+                evt.item.style.visibility = "visible"
             }
         });
     }
