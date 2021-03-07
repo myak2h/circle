@@ -10,7 +10,7 @@
     <%= csrf_meta_tag() %>
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
-  <body class="w3-light-grey">
+  <body>
       <div class="w3-white" style="width: 800px; margin-left: auto; margin-right: auto; margin-top: 20px; padding: 30px">
         <header>
           <section class="flex-row">
